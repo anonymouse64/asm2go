@@ -11,6 +11,7 @@ import (
 	"go/ast"
 	"go/parser"
 	"go/token"
+	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -310,8 +311,10 @@ TEXT ·%s(SB), %s, $%d-8
 		fmt.Sprintf(signature, funcDecl.SignatureString, sym, totalBytes)
 	}
 
-	if outputFile == "" {
-		// then dump to stdout
+	// If an output file was specified, write to that, otherwise write to stdout
+	if outputFile != "" {
+		return ioutil.WriteFile(outputFile, []byte(outputStr), 0644)
+	} else {
 		fmt.Println(outputStr)
 	}
 
