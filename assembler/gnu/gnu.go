@@ -206,12 +206,13 @@ func (g GnuAssembler) ProcessMachineCodeToInstructions(objectFile string, syms m
 
 				// Finally build up the instruction and add it into the map
 				symMachInstrs[sym] = append(symMachInstrs[sym], assembler.MachineInstruction{
-					Address:        instMatches[1],
-					Bytes:          decodedBytes,
-					RawInstruction: instMatches[3],
-					Comment:        strings.TrimSpace(commentString),
-					Command:        opcodeMatches[0][1],
-					Arguments:      formattedArgs,
+					Address:           instMatches[1],
+					Bytes:             decodedBytes,
+					RawInstruction:    instMatches[3],
+					InstructionString: rawInstructions[0],
+					Comment:           strings.TrimSpace(commentString),
+					Command:           opcodeMatches[0][1],
+					Arguments:         formattedArgs,
 				})
 			}
 		}

@@ -7,6 +7,8 @@ import "fmt"
 type MachineInstruction struct {
 	// The raw assembly instruction as parsed from the output
 	RawInstruction string
+	// The instruction string without any comments
+	InstructionString string
 	// The bytes corresponding to the actual machine instruction assembled
 	Bytes []byte
 	// The command (or opcode) of the instruction
