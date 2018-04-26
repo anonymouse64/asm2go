@@ -21,7 +21,6 @@ import (
 
 	"github.com/anonymouse64/asm2go/assembler"
 	"github.com/anonymouse64/asm2go/assembler/gnu"
-	"github.com/kr/pretty"
 )
 
 type arrayFlags []string
@@ -398,7 +397,7 @@ func main() {
 		}
 	}
 
-	fmt.Printf("useful symbols are : %#v\n", pretty.Formatter(usefulSymbolNames))
+	// fmt.Printf("useful symbols are : %#v\n", pretty.Formatter(usefulSymbolNames))
 
 	symsToInstructions, err := as.ProcessMachineCodeToInstructions(objectFile, usefulSymbolMap)
 	if err != nil {
@@ -406,7 +405,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	fmt.Printf("symbols + instructions: %#v\n", pretty.Formatter(symsToInstructions))
+	// fmt.Printf("symbols + instructions: %#v\n", pretty.Formatter(symsToInstructions))
 
 	// Now that we have a complete symbol -> instructions map we can begin generating go/plan9 assembly code for
 	// all of the functions
