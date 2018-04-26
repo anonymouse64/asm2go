@@ -292,7 +292,7 @@ TEXT ·%s(SB), %s, $%d-8
 		if !ok {
 			// Then this symbol doesn't have a corresponding go function that calls it, so we can just insert it into the file
 			// as a basic TEXT with reported stack size of 0 and no flags
-
+			// TODO implement...
 			return fmt.Errorf("error: symbol %s not found in go file declaration : %s", sym, goDeclarationFile)
 		}
 
@@ -307,7 +307,9 @@ TEXT ·%s(SB), %s, $%d-8
 		}
 
 		// Format this function signature
-		fmt.Sprintf(signature, funcDecl.SignatureString, sym, totalBytes)
+		// TODO - handle flags to be used here
+		outputStr += fmt.Sprintf(signature, funcDecl.SignatureString, sym, "0", totalBytes)
+
 	}
 
 	// If an output file was specified, write to that, otherwise write to stdout
