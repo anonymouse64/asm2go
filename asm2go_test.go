@@ -5,10 +5,13 @@ import (
 	"path/filepath"
 	"runtime"
 	"testing"
+
+	"github.com/anonymouse64/asm2go/assembler"
+	"github.com/anonymouse64/asm2go/assembler/gnu"
 )
 
 type assemblerTest struct {
-	as   Assembler
+	as   assembler.Assembler
 	err  error
 	name string
 	file string
@@ -23,21 +26,21 @@ func TestMakeAssembler(t *testing.T) {
 	t.Logf("testing with gnu as : %s\n", gasExec)
 	gasExecFolder, _ := filepath.Split(gasExec)
 	tables := []assemblerTest{
-		{gnuAssembler{
-			asExecutable:   gasExec,
-			arch:           runtime.GOARCH,
-			binToolsFolder: gasExecFolder,
-			prefix:         "",
+		{gnu.GnuAssembler{
+			AsExecutable:   gasExec,
+			Arch:           runtime.GOARCH,
+			BinToolsFolder: gasExecFolder,
+			Prefix:         "",
 		},
 			nil,
 			"gas",
 			"",
 		},
-		{gnuAssembler{
-			asExecutable:   gasExec,
-			arch:           runtime.GOARCH,
-			binToolsFolder: gasExecFolder,
-			prefix:         "",
+		{gnu.GnuAssembler{
+			AsExecutable:   gasExec,
+			Arch:           runtime.GOARCH,
+			BinToolsFolder: gasExecFolder,
+			Prefix:         "",
 		},
 			nil,
 			"",
@@ -53,21 +56,21 @@ func TestMakeAssembler(t *testing.T) {
 		armExecFolder, _ := filepath.Split(armGas)
 		tables = append(tables,
 			[]assemblerTest{
-				{gnuAssembler{
-					asExecutable:   armGas,
-					arch:           "arm",
-					binToolsFolder: armExecFolder,
-					prefix:         "arm-linux-gnueabihf-",
+				{gnu.GnuAssembler{
+					AsExecutable:   armGas,
+					Arch:           "arm",
+					BinToolsFolder: armExecFolder,
+					Prefix:         "arm-linux-gnueabihf-",
 				},
 					nil,
 					"",
 					armGas,
 				},
-				{gnuAssembler{
-					asExecutable:   armGas,
-					arch:           "arm",
-					binToolsFolder: armExecFolder,
-					prefix:         "arm-linux-gnueabihf-",
+				{gnu.GnuAssembler{
+					AsExecutable:   armGas,
+					Arch:           "arm",
+					BinToolsFolder: armExecFolder,
+					Prefix:         "arm-linux-gnueabihf-",
 				},
 					nil,
 					"arm-linux-gnueabihf-as",
@@ -78,22 +81,22 @@ func TestMakeAssembler(t *testing.T) {
 
 	for _, table := range tables {
 		as, err := makeAssembler(table.name, table.file)
-		if !compareAsgnuAssemblers(as, table.as) || err != table.err {
+		if !compareAsGnuAssemblers(as, table.as) || err != table.err {
 			t.Errorf("Unable to make assembler of (name=%s, file=%s), got: (as=%#v, err=%v) want: (as=%#v, err=%v).", table.name, table.file, as, err, table.as, table.err)
 		}
 	}
 
 }
 
-func compareAsgnuAssemblers(as Assembler, g Assembler) bool {
-	// cast g to a gnuAssembler
-	if g2, ok := g.(gnuAssembler); ok {
-		// cast the assembler to a gnuAssembler
-		if gnuAs, ok := as.(gnuAssembler); ok {
+func compareAsGnuAssemblers(as assembler.Assembler, g assembler.Assembler) bool {
+	// cast g to a GnuAssembler
+	if g2, ok := g.(gnu.GnuAssembler); ok {
+		// cast the assembler to a GnuAssembler
+		if gnuAs, ok := as.(gnu.GnuAssembler); ok {
 			// make sure the fields match
-			return gnuAs.arch == g2.arch && gnuAs.asExecutable == g2.asExecutable && gnuAs.binToolsFolder == g2.binToolsFolder && gnuAs.prefix == g2.prefix
+			return gnuAs.Arch == g2.Arch && gnuAs.AsExecutable == g2.AsExecutable && gnuAs.BinToolsFolder == g2.BinToolsFolder && gnuAs.Prefix == g2.Prefix
 		}
 	}
-	// it's not a gnuAssembler, so return false
+	// it's not a GnuAssembler, so return false
 	return false
 }
