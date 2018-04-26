@@ -1,7 +1,7 @@
 // asm2go - a utility for automatically generating golang assembly wrappers from complete native assembly
 // functions
 
-// run with go run asm2go.go -as arm-linux-gnueabihf-as -file keccak.s -as-opts -march=armv7-a -as-opts -mfpu=neon-vfpv4
+// run with go run asm2go.go -as arm-linux-gnueabihf-as -file tests/keccak.s -gofile tests/keccak_arm.go -out keccak_arm.s -as-opts -march=armv7-a -as-opts -mfpu=neon-vfpv4
 
 package main
 
@@ -21,6 +21,7 @@ import (
 
 	"github.com/anonymouse64/asm2go/assembler"
 	"github.com/anonymouse64/asm2go/assembler/gnu"
+	"github.com/anonymouse64/asm2plan9s/plan9s"
 )
 
 type arrayFlags []string
@@ -310,6 +311,27 @@ TEXT ·%s(SB), %s, $%d-8
 		// TODO - handle flags to be used here
 		outputStr += fmt.Sprintf(signature, funcDecl.SignatureString, sym, "0", totalBytes)
 
+		// Now output all of the instructions for this symbol
+		for _, instr := range instrs {
+			instrString, err := plan9s.ToPlan9s(
+				instr.Bytes,
+				strings.Join(
+					[]string{
+						" ",
+						instr.Command,
+						strings.Join(instr.Arguments, ", "),
+					},
+					" ",
+				),
+				0,
+				false,
+			)
+			if err != nil {
+				return err
+			}
+			outputStr += instrString
+			outputStr += "\n"
+		}
 	}
 
 	// If an output file was specified, write to that, otherwise write to stdout
