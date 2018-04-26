@@ -14,9 +14,18 @@ This example uses the assembly file from the KeccakCodePackage here : https://gi
 
 To generate the native go assembly from the native ARM assembly copied here run:
 
-	$ go run asm2go.go -file tests/keccak/src/keccak.s -gofile tests/keccak/keccak_arm.go -out tests/keccak/keccak_arm.s -as-opts -march=armv7-a -as-opts -mfpu=neon-vfpv4
-	$ go build tests/keccak/main.go -o keccak_check
+	$ git clone github.com/anonymouse64/asm2go
+	$ cd asm2go
+	$ go install
+	$ export PATH="$GOPATH/bin:$PATH"
+	$ cd tests/keccak_arm
+	$ go generate
+	$ go build keccak_check.go
 	$ ./keccak_check
+	Success!
+	$
+
+This uses the go:generate comment inside `keccak_check.go`
 
 The assembly generated uses the WORD feature of Plan9 assembly to insert all native instructions like such:
 
