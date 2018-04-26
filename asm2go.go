@@ -230,6 +230,18 @@ func deleteSpace(r rune) rune {
 	return r
 }
 
+// This regex matches the hex address of an instrucion, the binary of the instruction itself, and then the corresponding instruction
+// as 3 subgroups
+var instructionRegex = regexp.MustCompile(`(?m)^(?:\s*)([0-9a-f]+):(?:\s*)([0-9a-f ]+)\t(.+)$`)
+
+// This regex matches an opcode of letters, numbers and the ".", and all possible arguments as 2 subgroups
+var opcodeArgsRegex = regexp.MustCompile(`(?m)(^[a-zA-z0-9.]+)(?:\s*)(.*)$`)
+
+// This regex matches the end of a set of instructions associated with a symbol
+// a more readable version of this regex would be simply a check for the next line that is "\t..."
+// or the empty string after calling strings.TrimSpace
+var symbolEndRegex = regexp.MustCompile(`(?m)(^((\t\.\.\.)|[ \t]*)$)|(^$)`)
+
 // ProcessMachineCodeToInstructions takes in an object file and a map of symbol names -> Symbol that are to be processed
 // and returns a map of symbol name -> machine instructions corresponding to that symbol
 func (g gnuAssembler) ProcessMachineCodeToInstructions(objectFile string, syms map[string]Symbol) (map[string][]MachineInstruction, error) {
@@ -249,9 +261,9 @@ func (g gnuAssembler) ProcessMachineCodeToInstructions(objectFile string, syms m
 	for sym := range syms {
 		var start int
 		var end int
+		// We have to generate this regex each time, as we include the name of the symbol in the regex
 		symbolStartRegex := regexp.MustCompile(fmt.Sprintf(`(?m)^[0-9a-f]+ <%s>:`, sym))
-		// a more readable version of this would be simply a check for "\t..." or the empty string after calling strings.TrimSpace
-		symbolEndRegex := regexp.MustCompile(`(?m)(^((\t\.\.\.)|[ \t]*)$)|(^$)`)
+
 		for index, line := range lines {
 			loc := symbolStartRegex.FindStringIndex(line)
 			if len(loc) == 2 {
@@ -273,9 +285,6 @@ func (g gnuAssembler) ProcessMachineCodeToInstructions(objectFile string, syms m
 	}
 
 	// Now that we have all the instruction lines, we need to parse each line into a MachineInstruction
-	// fmt.Printf("%#v", pretty.Formatter(instrStrings))
-	instructionRegex := regexp.MustCompile(`(?m)^(?:\s*)([0-9a-f]+):(?:\s*)([0-9a-f ]+)\t(.+)$`)
-	opcodeArgsRegex := regexp.MustCompile(`(?m)(^[a-zA-z0-9.]+)(?:\s*)(.*)$`)
 	symMachInstrs := make(map[string][]MachineInstruction)
 	for sym, instrStrings := range symInstrStrings {
 		// Loop over each instruction, parsing it into a MachineInstruction
