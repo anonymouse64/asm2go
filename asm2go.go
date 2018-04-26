@@ -1,8 +1,6 @@
 // asm2go - a utility for automatically generating golang assembly wrappers from complete native assembly
 // functions
 
-// run with go run asm2go.go -as arm-linux-gnueabihf-as -file tests/keccak.s -gofile tests/keccak_arm.go -out keccak_arm.s -as-opts -march=armv7-a -as-opts -mfpu=neon-vfpv4
-
 package main
 
 import (
