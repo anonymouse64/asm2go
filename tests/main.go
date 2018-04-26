@@ -49,6 +49,10 @@ func main() {
 		fmt.Printf("state[%d] = %v\n", i, val)
 	}
 
+	for i := range state {
+		state[i] = uint64(i)
+	}
+
 	keccak.KeccakF1600(&state, &rc)
 
 	for i, val := range state {
