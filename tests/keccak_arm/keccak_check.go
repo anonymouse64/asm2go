@@ -1,13 +1,17 @@
-// Copyright 2014 The Go Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
+// example keccak assembly function usage on arm
 
-//  +build !amd64 appengine gccgo
+//+build arm
+
+//go:generate asm2go -file src/keccak.s -gofile keccak/keccak_arm.go -out keccak/keccak_arm.s -as-opts -march=armv7-a -as-opts -mfpu=neon-vfpv4
 
 package main
 
-import "fmt"
-import "./keccak"
+import (
+	"fmt"
+	"os"
+
+	"./keccak"
+)
 
 // rc stores the round constants for use in the ι step.
 var rc = [24]uint64{
@@ -38,27 +42,38 @@ var rc = [24]uint64{
 }
 
 func main() {
-	var state [25]uint64
-	for i := range state {
-		state[i] = uint64(i)
+	// Initialize the 2 state vectors
+	var state1 [25]uint64
+	var state2 [25]uint64
+	for i := range state1 {
+		state1[i] = uint64(i)
+		state2[i] = uint64(i)
 	}
 
-	keccakF1600Generic(&state)
+	// Run the generic method for the first state
+	keccakF1600Generic(&state1)
 
-	for i, val := range state {
-		fmt.Printf("state[%d] = %v\n", i, val)
+	// Run the assembly implemented function for the second state
+	// note that here we also have to pass in the round constants as well
+	keccak.KeccakF1600(&state2, &rc)
+
+	// Now check that the 2 state vectrors match
+	for i, val1 := range state1 {
+		if val1 != state2[i] {
+			fmt.Printf("ERROR: %d != %d\n", state1[i], state2[i])
+			os.Exit(1)
+		}
 	}
 
-	for i := range state {
-		state[i] = uint64(i)
-	}
-
-	keccak.KeccakF1600(&state, &rc)
-
-	for i, val := range state {
-		fmt.Printf("state[%d] = %v\n", i, val)
-	}
+	fmt.Println("Success!")
 }
+
+// This native go implementation copied from : https://github.com/golang/crypto/blob/master/sha3/keccakf.go
+
+// Copyright 2014 The Go Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file in
+// the golang/crypto repository.
 
 // keccakF1600Generic applies the Keccak permutation to a 1600b-wide
 // state represented as a slice of 25 uint64s.

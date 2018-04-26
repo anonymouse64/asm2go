@@ -1,4 +1,3 @@
-//go:generate asm2go -file src/keccak.s -gofile keccak_arm.go -out keccak_arm.s -as-opts -march=armv7-a -as-opts -mfpu=neon-vfpv4
 package keccak
 
 // go:noescape
