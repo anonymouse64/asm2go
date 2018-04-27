@@ -36,6 +36,10 @@ func (g GnuAssembler) objdump() string {
 	return g.toolExecutable("objdump")
 }
 
+func (g GnuAssembler) Architecture() string {
+	return g.Arch
+}
+
 func (g GnuAssembler) AssembleToMachineCode(file string, asOpts []string) (string, string, error) {
 	cwd, err := os.Getwd()
 	if err != nil {

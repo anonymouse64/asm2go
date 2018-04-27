@@ -40,6 +40,8 @@ type Assembler interface {
 	// processing ParseObjectSymbols return value) and should produce a map of those symbols to their
 	// respective instructions
 	ProcessMachineCodeToInstructions(string, map[string]Symbol) (map[string][]MachineInstruction, error)
+	// Architecture returns the architecture that this compiler runs for
+	Architecture() string
 }
 
 // Symbol is a entry in the symbol table of an object file
@@ -92,6 +94,10 @@ func (i invalidAssembler) ParseObjectSymbols(string) ([]Symbol, error) {
 
 func (i invalidAssembler) ProcessMachineCodeToInstructions(string, map[string]Symbol) (map[string][]MachineInstruction, error) {
 	return nil, fmt.Errorf("unimplemented assembler")
+}
+
+func (i invalidAssembler) Architecture() string {
+	return "invalid"
 }
 
 func InvalidAssembler() Assembler {
