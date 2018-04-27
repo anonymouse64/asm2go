@@ -1,5 +1,9 @@
 # asm2go
 
+[![Go Report Card](https://goreportcard.com/badge/github.com/anonymouse64/asm2go)](https://goreportcard.com/report/github.com/anonymouse64/asm2go)
+[![license](https://img.shields.io/badge/license-GPLv3-blue.svg)](LICENSE)
+
+
 This project aims to completely automatically generate working Golang assembly from native assembly and a golang declaration file (file with golang declarations of the assembly function - this is a normal go file, see examples).
 
 1. Constant arrays are not supported, i.e. a label with data after it inside assembly does not work because when assembled, the references to addresses are absolute and the golang linker will move the constants around in memory. This may or may not be supported in when assembling/compiling from C/C++ code
@@ -50,3 +54,9 @@ package keccak
 func KeccakF1600(state *[25]uint64, constants *[24]uint64)
 
 ```
+
+
+## License
+
+This project is licensed under GPLv3. See LICENSE file for full license.
+Copyright 2018 Canonical Ltd.
