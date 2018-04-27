@@ -31,10 +31,12 @@ The assembly generated uses the WORD feature of Plan9 assembly to insert all nat
 
 ```
 TEXT ·KeccakF1600(SB), 0, $0-8
-    WORD $0xe1a0200e //  mov r2, lr
-    WORD $0xed2d8b10 //  vpush {d8-d15}
-    WORD $0xf42007dd //  vld1.64 {d0}, [r0 :64]!
-    WORD $0xf42027dd //  vld1.64 {d2}, [r0 :64]!
+    WORD $0xe1a0200e;  // mov      r2        lr 
+    WORD $0xed2d8b10;  // vpush    {d8-d15}  
+    WORD $0xf42007dd;  // vld1.64  {d0}      [r0 :64]!  
+    WORD $0xf42027dd;  // vld1.64  {d2}      [r0 :64]!  
+    WORD $0xf42047dd;  // vld1.64  {d4}      [r0 :64]!  
+    WORD $0xf42067dd;  // vld1.64  {d6}      [r0 :64]!  
 ...
 ```
 
