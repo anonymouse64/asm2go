@@ -14,6 +14,7 @@ import (
 	"github.com/anonymouse64/asm2go/assembler"
 )
 
+// GnuAssembler implements Assembler interface and works with gnu "as" (aka "gas") assembler
 type GnuAssembler struct {
 	// The assembler executable itself - this should always be an absolute path
 	AsExecutable string
@@ -36,10 +37,13 @@ func (g GnuAssembler) objdump() string {
 	return g.toolExecutable("objdump")
 }
 
+// Architecture returns the architecture of the this GNU assembler
 func (g GnuAssembler) Architecture() string {
 	return g.Arch
 }
 
+// AssembleToMachineCode takes an assembly file with options and returns a corresponding compiled object file, and a
+// assembly listing file
 func (g GnuAssembler) AssembleToMachineCode(file string, asOpts []string) (string, string, error) {
 	cwd, err := os.Getwd()
 	if err != nil {
@@ -90,7 +94,7 @@ func (g GnuAssembler) ParseObjectSymbols(objectFile string) ([]assembler.Symbol,
 	}
 	strOutput := string(cmb[:])
 
-	// Find the first occurence of "SYMBOL TABLE:"
+	// Find the first occurrence of "SYMBOL TABLE:"
 	symbolTableStart := strings.Index(strOutput, "SYMBOL TABLE:")
 	if symbolTableStart == -1 {
 		return nil, fmt.Errorf("error processing objdump output: %v", cmb)
@@ -114,7 +118,7 @@ func deleteSpace(r rune) rune {
 	return r
 }
 
-// This regex matches the hex address of an instrucion, the binary of the instruction itself, and then the corresponding instruction
+// This regex matches the hex address of an instruction, the binary of the instruction itself, and then the corresponding instruction
 // as 3 subgroups
 var instructionRegex = regexp.MustCompile(`(?m)^(?:\s*)([0-9a-f]+):(?:\s*)([0-9a-f ]+)\t(.+)$`)
 

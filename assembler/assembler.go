@@ -100,6 +100,7 @@ func (i invalidAssembler) Architecture() string {
 	return "invalid"
 }
 
+// InvalidAssembler returns an Assembler that doesn't work or do anything - useful for returning errors...
 func InvalidAssembler() Assembler {
 	return invalidAssembler{}
 }
