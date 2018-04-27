@@ -4,12 +4,14 @@
 package main
 
 import (
+	"bufio"
 	"flag"
 	"fmt"
 	"go/ast"
 	"go/parser"
 	"go/token"
 	"io"
+	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -220,6 +222,105 @@ func makeAssembler(assemblerName string, assemblerFile string) (assembler.Assemb
 	}
 }
 
+// getStringFromFilePosition gets the associated string from a file given a start and end position
+func getStringFromFilePosition(fset *token.FileSet, start, end token.Pos) (string, error) {
+	// Check that the start comes before the end
+	if start > end {
+		return "", fmt.Errorf("error: invalid positions : %v -> %v", start, end)
+	}
+
+	// Make sure that the two positions are for the same file
+	startFile := fset.File(start)
+	endFile := fset.File(end)
+
+	if endFile == nil || startFile == nil {
+		return "", fmt.Errorf("error: start or end positions are nil")
+	}
+
+	if startFile != endFile {
+		return "", fmt.Errorf("error: start + end are not in the same file (start=%#v, end=%#v)", startFile, endFile)
+	}
+
+	absoluteStart := fset.Position(start)
+	absoluteEnd := fset.Position(end)
+
+	// Check that the file exists
+	if _, err := os.Stat(absoluteStart.Filename); err != nil {
+		return "", err
+	}
+
+	// Open the file for reading
+	f, err := os.Open(absoluteStart.Filename)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer f.Close()
+	scanner := bufio.NewScanner(f)
+
+	// Note: line numbers from token.Position is 1-indexed
+	lineNumber := 1
+
+	// corner case where the start + end are on the same line
+	if absoluteStart.Line == absoluteEnd.Line {
+		// Scan up to the specifiied line number
+		for lineNumber = 1; scanner.Scan() && lineNumber < absoluteStart.Line; lineNumber++ {
+		}
+
+		// Make sure we actually read the required number of lines, otherwise fail
+		if lineNumber != absoluteStart.Line {
+			fmt.Println(lineNumber)
+			fmt.Println(absoluteStart.Line)
+			return "", fmt.Errorf("error: line %d doesn't exist in file %s", absoluteStart.Line, absoluteStart.Filename)
+		}
+		// Otherwise we are on the desired line, so make sure that the end column is within this line
+		line := scanner.Text()
+		if absoluteEnd.Column-1 <= len(line) {
+			return line[absoluteStart.Column-1 : absoluteEnd.Column-1], nil
+		} else {
+			// Line too short
+			fmt.Println(absoluteStart.Column, absoluteEnd.Column, len(line), line)
+			return "", fmt.Errorf("error: line %d of %s too short", lineNumber, absoluteStart.Filename)
+		}
+	}
+
+	// General case - start + end on different lines
+	// Start scanning up to the start line number
+	var text string
+
+	for ; scanner.Scan(); lineNumber++ {
+		if lineNumber == absoluteStart.Line {
+			// then we found the start - ensure that the column number for the start is within this line
+			line := scanner.Text()
+			if absoluteStart.Column <= len(line) {
+				// Column number is 1-indexed so subtract 1 from it for the position in the string slice
+				text = line[absoluteStart.Column-1:]
+				break
+			} else {
+				return "", fmt.Errorf("error: line %d of %s too short", lineNumber, absoluteStart.Filename)
+			}
+		}
+	}
+
+	// Now scan up to the end line number, adding all text up to the end column
+	for ; scanner.Scan(); lineNumber++ {
+		if lineNumber == absoluteEnd.Line {
+			// then we found the end - ensure that the column number for the start is within this line
+			line := scanner.Text()
+			if absoluteEnd.Column <= len(line) {
+				// Column number is 1-indexed so subtract 1 from it for the position in the string slice
+				text += line[absoluteStart.Column-1:]
+				break
+			} else {
+				return "", fmt.Errorf("error: line %d of %s too short", lineNumber, absoluteStart.Filename)
+			}
+		} else {
+			text += scanner.Text()
+		}
+	}
+
+	return text, nil
+}
+
 // parseGoLangFileForFuncDecls will parse a golang source file looking for suitable
 // assembly implemented function declarations and return any found functions
 // the map is of the function name to the declaration struct
@@ -322,8 +423,13 @@ func parseGoLangFileForFuncDecls(goSrc string) (map[string]FunctionDeclaration, 
 				for _, comment := range cmap.Filter(function).Comments() {
 					funcComments += comment.Text()
 				}
-				fmt.Printf("%s:\t%s\n", fset.Position(n.Pos()), function.Name.Name)
-				fmt.Println(funcComments)
+				decl.DocComments = funcComments
+
+				decl.SignatureString, err = getStringFromFilePosition(fset, function.Pos(), function.End())
+				if err != nil {
+					fmt.Println(err)
+					return true
+				}
 
 				// Put this function declaration into the map
 				funcDecls[decl.Name] = decl
@@ -346,6 +452,9 @@ func parseGoLangFileForFuncDecls(goSrc string) (map[string]FunctionDeclaration, 
 func generatePlan9Assembly(goDeclarationFile, outputFile, arch string, syms map[string][]assembler.MachineInstruction) error {
 
 	// First make sure the goDeclarationFile exists
+	if goDeclarationFile == "" {
+		return fmt.Errorf("error: gofile must be specified")
+	}
 	if _, err := os.Stat(goDeclarationFile); err != nil {
 		// doesn't exist or can't be opened
 		return err
@@ -377,6 +486,7 @@ func generatePlan9Assembly(goDeclarationFile, outputFile, arch string, syms map[
 	// always include the textflag.h include file for stuff like NOSPLIT, NOPTR, etc.
 	fmt.Fprintf(w, `// Generated by asm2go %s DO NOT EDIT
 #include "textflag.h"
+
 `, strings.Join(os.Args[1:], " "))
 
 	// For each symbol in the list, which should only be functions, other types aren't yet supported
@@ -406,7 +516,7 @@ func generatePlan9Assembly(goDeclarationFile, outputFile, arch string, syms map[
 			`%s
 TEXT ·%s(SB), %s, $%d-8
 `,
-			funcDecl.SignatureString,
+			"// "+funcDecl.SignatureString,
 			sym,
 			// TODO: handle flags here
 			"0",
