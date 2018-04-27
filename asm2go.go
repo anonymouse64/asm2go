@@ -102,6 +102,17 @@ func formatHexInstruction(instr assembler.MachineInstruction, arch string, w *ta
 			for i, opcode := range opcodes[:byteLen] {
 				args[i] = opcode
 			}
+			// For some reason the plan9 assembler puts down data for 32 bit architectures in the order they appear
+			// but for 64-bit architecture's swaps the endianness, so for 64-bit we need to reverse the endianness of the bytes
+			// them into the array
+			if maxBits == 64 {
+				for i := 0; byteLen != 1 && i < byteLen; i += 2 {
+					tmp := args[i]
+					args[i] = args[i+1]
+					args[i+1] = tmp
+				}
+			}
+
 			fmt.Fprintf(w, prefixes[i], args...)
 
 			// Drop these bytes for next time
