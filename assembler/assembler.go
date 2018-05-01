@@ -108,7 +108,8 @@ func InvalidAssembler() Assembler {
 	return invalidAssembler{}
 }
 
-// formatHexInsttruction formats an instruction for golang compatibility using unsupported opcode syntax.
+// FormatHex formats an instruction for golang compatibility using unsupported opcode syntax.
+// See https://golang.org/doc/asm#unsupported_opcodes for more details
 // The tabwriter is used for formatting with neat columns going down the file
 func (instr MachineInstruction) FormatHex(arch string, w *tabwriter.Writer) error {
 	// First check whether the architecture specified is 32-bit or 64-bit
