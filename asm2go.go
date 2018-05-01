@@ -524,10 +524,11 @@ func main() {
 	// - Not a Warning symbol
 	// - Not a File symbol
 	// - Section is not "*UND*" (i.e. it's not in an undefined section, i.e. another object file)
+	// - Section is not "*ABS*" (i.e. it is a symbol associated with a particular section)
 	usefulSymbolMap := make(map[string]assembler.Symbol)
 	var usefulSymbolNames []string
 	for _, sym := range syms {
-		if !sym.Debugging && !sym.Warning && !sym.File && sym.Section != "*UND*" {
+		if !sym.Debugging && !sym.Warning && !sym.File && sym.Section != "*UND*" && sym.Section != "*ABS*" {
 			usefulSymbolNames = append(usefulSymbolNames, sym.Name)
 			usefulSymbolMap[sym.Name] = sym
 		}
