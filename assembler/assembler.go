@@ -3,8 +3,8 @@ package assembler
 import (
 	"encoding/binary"
 	"fmt"
+	"io"
 	"strconv"
-	"text/tabwriter"
 
 	"golang.org/x/arch/arm/armasm"
 )
@@ -116,10 +116,9 @@ func InvalidAssembler() Assembler {
 
 // WriteInstruction formats an instruction for golang compatibility using unsupported opcode syntax.
 // See https://golang.org/doc/asm#unsupported_opcodes for more details
-// The tabwriter is used for formatting with neat columns going down the file
 // tryTranslate controls whether or not to attempt to translate this instruction to Golang syntax
 // and output that instead
-func (instr MachineInstruction) WriteInstruction(arch string, w *tabwriter.Writer, tryTranslate bool) error {
+func (instr MachineInstruction) WriteInstruction(arch string, w io.Writer, tryTranslate bool) error {
 	// Write out the indentation for this instruction
 	fmt.Fprintf(w, "    ")
 
@@ -155,7 +154,7 @@ func reverseEndianness(byteSlice []byte) {
 	}
 }
 
-func (instr MachineInstruction) writePlan9UnsupportedInstruction(arch string, w *tabwriter.Writer) error {
+func (instr MachineInstruction) writePlan9UnsupportedInstruction(arch string, w io.Writer) error {
 	// First check whether the architecture specified is 32-bit or 64-bit
 	// default to 64-bit
 	maxBits := 64
@@ -235,7 +234,7 @@ func (instr MachineInstruction) writePlan9UnsupportedInstruction(arch string, w 
 	return nil
 }
 
-func (instr MachineInstruction) writePlan9SupportedInstruction(arch string, w *tabwriter.Writer) error {
+func (instr MachineInstruction) writePlan9SupportedInstruction(arch string, w io.Writer) error {
 	switch arch {
 	case "arm":
 		// the arm decoder expects the bytes in little endian
