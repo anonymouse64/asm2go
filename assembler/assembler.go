@@ -119,18 +119,18 @@ func InvalidAssembler() Assembler {
 	return invalidAssembler{}
 }
 
-// WriteInstruction formats an instruction for golang compatibility using unsupported opcode syntax.
+// WriteOutput formats an instruction for golang compatibility using unsupported opcode syntax.
 // See https://golang.org/doc/asm#unsupported_opcodes for more details
 // tryTranslate controls whether or not to attempt to translate this instruction to Golang syntax
 // and output that instead
-func (instr MachineInstruction) WriteInstruction(arch string, w io.Writer, tryTranslate bool) error {
+func (instr MachineInstruction) WriteOutput(arch string, w io.Writer, tryTranslate bool) error {
 	// Write out the indentation for this instruction
 	fmt.Fprintf(w, "    ")
 
 	// Switch on the method to use for outputting this instruction
 	switch {
 	case tryTranslate:
-		err := instr.writePlan9SupportedInstruction(arch, w)
+		err := instr.writePlan9Supported(arch, w)
 		// if there was no error, exit the switch, otherwise fallback on
 		// using unsupported opcode syntax
 		if err == nil {
@@ -140,7 +140,7 @@ func (instr MachineInstruction) WriteInstruction(arch string, w io.Writer, tryTr
 		}
 		fallthrough
 	default:
-		instr.writePlan9UnsupportedInstruction(arch, w)
+		instr.writePlan9Unsupported(arch, w)
 	}
 
 	// Now we add the actual instructions as a new column for each command/argument
@@ -161,7 +161,7 @@ func reverseEndianness(byteSlice []byte) {
 	}
 }
 
-func (instr MachineInstruction) writePlan9UnsupportedInstruction(arch string, w io.Writer) error {
+func (instr MachineInstruction) writePlan9Unsupported(arch string, w io.Writer) error {
 	// First check whether the architecture specified is 32-bit or 64-bit
 	// default to 64-bit
 	maxBits := 64
@@ -241,7 +241,7 @@ func (instr MachineInstruction) writePlan9UnsupportedInstruction(arch string, w 
 	return nil
 }
 
-func (instr MachineInstruction) writePlan9SupportedInstruction(arch string, w io.Writer) error {
+func (instr MachineInstruction) writePlan9Supported(arch string, w io.Writer) error {
 	switch arch {
 	case "arm":
 		// the arm decoder expects the bytes in little endian

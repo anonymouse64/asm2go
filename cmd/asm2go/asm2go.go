@@ -448,7 +448,7 @@ TEXT ·%s(SB), %s, $%d-8
 
 		// Now output all of the instructions for this symbol
 		for _, instr := range instrs {
-			err := instr.WriteInstruction(arch, w, true)
+			err := instr.WriteOutput(arch, w, true)
 			if err != nil {
 				return err
 			}
