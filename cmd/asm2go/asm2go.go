@@ -267,25 +267,29 @@ func parseGoLangFileForFuncDecls(goSrc string) (map[string]FunctionDeclaration, 
 				decl := FunctionDeclaration{}
 				decl.Name = function.Name.Name
 
+				// TODO: this is largely unimplemented, due to the large number of
+				// different cases that need to be handled for the args/results
+
 				// Iterate over the function arguments to gather information on the function args
 				for _, arg := range function.Type.Params.List {
-					fmt.Printf("arg type %T\n", arg.Type)
 					switch z := arg.Type.(type) {
 					case *ast.ArrayType:
 						if z.Len == nil {
-							fmt.Printf("arg type is slice of: %#v\n", z)
+							// arg is a slice
+							return true
 						} else {
-							if length, ok := z.Len.(*ast.BasicLit); ok {
-								fmt.Printf("z.Elt is %#v\n", z.Elt)
+							if _, ok := z.Len.(*ast.BasicLit); ok {
 								switch elemType := z.Elt.(type) {
 								case *ast.StructType:
 									if elemType.Incomplete {
-										fmt.Printf("arg type is array of incomplete structs with fields %#v and length %#v\n", elemType.Fields, length.Value)
+										// fmt.Printf("arg type is array of incomplete structs with fields %#v and length %#v\n", elemType.Fields, length.Value)
 									} else {
-										fmt.Printf("arg type is array of type struct with %d fields and length %#v\n", len(elemType.Fields.List), length.Value)
+										// fmt.Printf("arg type is array of type struct with %d fields and length %#v\n", len(elemType.Fields.List), length.Value)
 									}
+									return true
 								case *ast.Ident:
-									fmt.Printf("arg type is array of type %#v and length %#v\n", elemType.Name, length.Value)
+									// fmt.Printf("arg type is array of type %#v and length %#v\n", elemType.Name, length.Value)
+									return true
 								}
 							} else {
 								// Some error with this function declaration - just move onto the next ast node
@@ -293,7 +297,6 @@ func parseGoLangFileForFuncDecls(goSrc string) (map[string]FunctionDeclaration, 
 							}
 						}
 					case *ast.Ident:
-						fmt.Printf("%s arg type: %#v\n", decl.Name, z)
 					}
 				}
 
@@ -301,27 +304,28 @@ func parseGoLangFileForFuncDecls(goSrc string) (map[string]FunctionDeclaration, 
 				// Note that the Results can be nil : https://golang.org/pkg/go/ast/#FuncType
 				if function.Type.Results != nil {
 					for _, res := range function.Type.Results.List {
-						fmt.Printf("res type %T\n", res.Type)
 						// Switch on the type of result
 						switch z := res.Type.(type) {
 						case *ast.ArrayType:
 							if z.Len == nil {
-								// If the length of an array declared as a result is nil, then this
-								// return type is a slice
-								// TODO: support returning slices
+								// res is a slice
 								return true
 							} else {
 								// result is an array of a specific length
-								if length, ok := z.Len.(*ast.BasicLit); ok {
-									fmt.Printf("z.Elt is %#v\n", z.Elt)
+								if _, ok := z.Len.(*ast.BasicLit); ok {
 									switch elemType := z.Elt.(type) {
 									case *ast.StructType:
 										// Then this result is returning a list of structs
 										// TODO: support returning array of structs
+										if elemType.Incomplete {
+											// fmt.Printf("arg type is array of incomplete structs with fields %#v and length %#v\n", elemType.Fields, length.Value)
+										} else {
+											// fmt.Printf("arg type is array of type struct with %d fields and length %#v\n", len(elemType.Fields.List), length.Value)
+										}
+										return true
 									case *ast.Ident:
 										// This result is returning a concrete type of array of - determine what kind of type the array is
 
-										fmt.Printf("result type is array of type %#v and length %#v\n", elemType.Name, length.Value)
 									}
 								} else {
 									// Some error with this function declaration - just move onto the next ast node
@@ -329,7 +333,6 @@ func parseGoLangFileForFuncDecls(goSrc string) (map[string]FunctionDeclaration, 
 								}
 							}
 						case *ast.Ident:
-							fmt.Printf("%s result type: %#v\n", decl.Name, z)
 						}
 					}
 				}
@@ -342,6 +345,9 @@ func parseGoLangFileForFuncDecls(goSrc string) (map[string]FunctionDeclaration, 
 				}
 				decl.DocComments = funcComments
 
+				// Get the full signature of this function from the source file using the pos + end
+				// note that this works because there is no body - so this entire declaration consists of just the
+				// signature
 				decl.SignatureString, err = getStringFromFilePosition(fset, function.Pos(), function.End())
 				if err != nil {
 					fmt.Println(err)
