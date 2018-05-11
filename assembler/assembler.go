@@ -9,6 +9,11 @@ import (
 	"golang.org/x/arch/arm/armasm"
 )
 
+const (
+	unrecognizedInstr = `instruction %s not supported in plan9`
+	unsupportedArch   = `architecture %s not supported`
+)
+
 // MachineInstruction represents an individual machine instruction as found in a binary
 // executable, etc.
 type MachineInstruction struct {
@@ -130,6 +135,8 @@ func (instr MachineInstruction) WriteInstruction(arch string, w io.Writer, tryTr
 		// using unsupported opcode syntax
 		if err == nil {
 			break
+		} else if err.Error() != fmt.Sprintf(unrecognizedInstr, instr.Command) && err.Error() != fmt.Sprintf(unsupportedArch, arch) {
+			return err
 		}
 		fallthrough
 	default:
@@ -245,7 +252,7 @@ func (instr MachineInstruction) writePlan9SupportedInstruction(arch string, w io
 		if err != nil {
 			// Then we couldn't decode this instruction and we should
 			// use the WORD method
-			return fmt.Errorf("instruction %s not supported in plan9", instr.Command)
+			return fmt.Errorf(unrecognizedInstr, instr.Command)
 		}
 
 		// Now translate the instruction into plan 9 syntax
@@ -255,7 +262,7 @@ func (instr MachineInstruction) writePlan9SupportedInstruction(arch string, w io
 		}
 		fmt.Fprintf(w, "%s \t", armasm.GoSyntax(goInstr, address, nil, nil))
 	default:
-		return fmt.Errorf("architecture %s not supported for plan9 format", arch)
+		return fmt.Errorf(unsupportedArch, arch)
 	}
 
 	return nil
