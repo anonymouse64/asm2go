@@ -1,6 +1,7 @@
 package gnu
 
 import (
+	"encoding/binary"
 	"encoding/hex"
 	"fmt"
 	"os"
@@ -216,6 +217,7 @@ func (g GnuAssembler) ProcessMachineCodeToInstructions(objectFile string, syms m
 				symMachInstrs[sym] = append(symMachInstrs[sym], assembler.MachineInstruction{
 					Address:           instMatches[1],
 					Bytes:             decodedBytes,
+					BytesEndianness:   binary.LittleEndian,
 					RawInstruction:    instMatches[3],
 					InstructionString: rawInstructions[0],
 					Comment:           strings.TrimSpace(commentString),

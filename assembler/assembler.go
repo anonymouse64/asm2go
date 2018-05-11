@@ -1,8 +1,12 @@
 package assembler
 
 import (
+	"encoding/binary"
 	"fmt"
+	"strconv"
 	"text/tabwriter"
+
+	"golang.org/x/arch/arm/armasm"
 )
 
 // MachineInstruction represents an individual machine instruction as found in a binary
@@ -14,6 +18,8 @@ type MachineInstruction struct {
 	InstructionString string
 	// The bytes corresponding to the actual machine instruction assembled
 	Bytes []byte
+	// The endianness of the instruction bytes
+	BytesEndianness binary.ByteOrder
 	// The command (or opcode) of the instruction
 	Command string
 	// The arguments for the opcode - can be nil if command has no arguments
@@ -108,10 +114,48 @@ func InvalidAssembler() Assembler {
 	return invalidAssembler{}
 }
 
-// FormatHex formats an instruction for golang compatibility using unsupported opcode syntax.
+// WriteInstruction formats an instruction for golang compatibility using unsupported opcode syntax.
 // See https://golang.org/doc/asm#unsupported_opcodes for more details
 // The tabwriter is used for formatting with neat columns going down the file
-func (instr MachineInstruction) FormatHex(arch string, w *tabwriter.Writer) error {
+// tryTranslate controls whether or not to attempt to translate this instruction to Golang syntax
+// and output that instead
+func (instr MachineInstruction) WriteInstruction(arch string, w *tabwriter.Writer, tryTranslate bool) error {
+	// Write out the indentation for this instruction
+	fmt.Fprintf(w, "    ")
+
+	// Switch on the method to use for outputting this instruction
+	switch {
+	case tryTranslate:
+		err := instr.writePlan9SupportedInstruction(arch, w)
+		// if there was no error, exit the switch, otherwise fallback on
+		// using unsupported opcode syntax
+		if err == nil {
+			break
+		}
+		fallthrough
+	default:
+		instr.writePlan9UnsupportedInstruction(arch, w)
+	}
+
+	// Now we add the actual instructions as a new column for each command/argument
+	fmt.Fprintf(w, "// %s\t", instr.Command)
+	for _, arg := range instr.Arguments {
+		fmt.Fprintf(w, "%s\t", arg)
+	}
+
+	fmt.Fprintln(w)
+
+	return nil
+
+}
+
+func reverseEndianness(byteSlice []byte) {
+	for i, j := 0, len(byteSlice)-1; i < j; i, j = i+1, j-1 {
+		byteSlice[i], byteSlice[j] = byteSlice[j], byteSlice[i]
+	}
+}
+
+func (instr MachineInstruction) writePlan9UnsupportedInstruction(arch string, w *tabwriter.Writer) error {
 	// First check whether the architecture specified is 32-bit or 64-bit
 	// default to 64-bit
 	maxBits := 64
@@ -122,9 +166,6 @@ func (instr MachineInstruction) FormatHex(arch string, w *tabwriter.Writer) erro
 	case "arm":
 		maxBits = 32
 	}
-
-	// Write out the indentation for this instruction
-	fmt.Fprintf(w, "    ")
 
 	// Calculate the prefixes to use based on the number of bits
 	var prefixes []string
@@ -178,11 +219,9 @@ func (instr MachineInstruction) FormatHex(arch string, w *tabwriter.Writer) erro
 			// For some reason the plan9 assembler puts down data for 32 bit architectures in the order they appear
 			// but for 64-bit architecture's swaps the endianness, so for 64-bit we need to reverse the endianness of the bytes
 			// them into the array
-			if maxBits == 64 {
-				for i := 0; byteLen != 1 && i < byteLen; i += 2 {
-					tmp := args[i]
-					args[i] = args[i+1]
-					args[i+1] = tmp
+			if maxBits == 64 && instr.BytesEndianness == binary.LittleEndian {
+				for i, j := 0, len(args)-1; i < j; i, j = i+1, j-1 {
+					args[i], args[j] = args[j], args[i]
 				}
 			}
 
@@ -193,14 +232,32 @@ func (instr MachineInstruction) FormatHex(arch string, w *tabwriter.Writer) erro
 		}
 	}
 
-	// Now we add the actual instructions as a new column for each command/argument
-	fmt.Fprintf(w, "// %s\t", instr.Command)
-	for _, arg := range instr.Arguments {
-		fmt.Fprintf(w, "%s\t", arg)
+	return nil
+}
+
+func (instr MachineInstruction) writePlan9SupportedInstruction(arch string, w *tabwriter.Writer) error {
+	switch arch {
+	case "arm":
+		// the arm decoder expects the bytes in little endian
+		instrBytes := instr.Bytes
+		reverseEndianness(instrBytes)
+		// to translate this machine instruction into plan9 assembly, first see if it can be decoded
+		goInstr, err := armasm.Decode(instrBytes, armasm.ModeARM)
+		if err != nil {
+			// Then we couldn't decode this instruction and we should
+			// use the WORD method
+			return fmt.Errorf("instruction %s not supported in plan9", instr.Command)
+		}
+
+		// Now translate the instruction into plan 9 syntax
+		address, err := strconv.ParseUint(instr.Address, 16, 64)
+		if err != nil {
+			return err
+		}
+		fmt.Fprintf(w, "%s \t", armasm.GoSyntax(goInstr, address, nil, nil))
+	default:
+		return fmt.Errorf("architecture %s not supported for plan9 format", arch)
 	}
 
-	fmt.Fprintln(w)
-
 	return nil
-
 }
