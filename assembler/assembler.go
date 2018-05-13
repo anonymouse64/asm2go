@@ -136,6 +136,7 @@ func (instr MachineInstruction) WriteOutput(arch string, w io.Writer, tryTransla
 		if err == nil {
 			break
 		} else if err.Error() != fmt.Sprintf(unrecognizedInstr, instr.Command) && err.Error() != fmt.Sprintf(unsupportedArch, arch) {
+			// error isn't an unsupported error, so return this and fail for this instruction
 			return err
 		}
 		fallthrough
