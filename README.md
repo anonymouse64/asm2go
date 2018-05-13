@@ -3,6 +3,7 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/anonymouse64/asm2go)](https://goreportcard.com/report/github.com/anonymouse64/asm2go)
 [![license](https://img.shields.io/badge/license-GPLv3-blue.svg)](LICENSE)
 [![Build Status](https://travis-ci.com/anonymouse64/asm2go.svg?branch=master)](https://travis-ci.com/anonymouse64/asm2go)
+[![codecov](https://codecov.io/gh/anonymouse64/asm2go/branch/master/graph/badge.svg)](https://codecov.io/gh/anonymouse64/asm2go)
 
 
 This project aims to automatically generate working Golang assembly from native assembly and a golang declaration file, mainly used for implementing performance-intensive complex functions in assembly. 
