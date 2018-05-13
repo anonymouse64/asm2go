@@ -249,7 +249,8 @@ func (instr MachineInstruction) writePlan9Supported(arch string, w io.Writer) er
 	switch arch {
 	case "arm":
 		// the arm decoder expects the bytes in little endian
-		instrBytes := instr.Bytes
+		instrBytes := make([]byte, len(instr.Bytes))
+		copy(instrBytes, instr.Bytes)
 		reverseEndianness(instrBytes)
 		// to translate this machine instruction into plan9 assembly, first see if it can be decoded
 		goInstr, err := armasm.Decode(instrBytes, armasm.ModeARM)

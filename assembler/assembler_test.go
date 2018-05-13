@@ -34,7 +34,7 @@ func TestInstructionFormatHex(t *testing.T) {
 			Command:   "vld1.64",
 			Arguments: []string{"{d0}", "[r0 :64]! "},
 		},
-			"dd0720f4",
+			"f42007dd",
 			"arm",
 			true,
 			nil,
