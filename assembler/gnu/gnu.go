@@ -216,7 +216,7 @@ func (g GnuAssembler) ProcessMachineCodeToInstructions(objectFile string, syms m
 				// Parse the address from the instMatches
 				address, err := strconv.ParseUint(instMatches[1], 16, 64)
 				if err != nil {
-					return err
+					return nil, err
 				}
 
 				// Finally build up the instruction and add it into the map
