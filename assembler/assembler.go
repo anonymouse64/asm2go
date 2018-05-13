@@ -4,7 +4,6 @@ import (
 	"encoding/binary"
 	"fmt"
 	"io"
-	"strconv"
 
 	"golang.org/x/arch/arm/armasm"
 )
@@ -37,8 +36,8 @@ type MachineInstruction struct {
 	// translated from labels, i.e. "jmp MYLABEL" might get translated into "jmp #16 ; 0x10" if MYLABEL gets put at
 	// address 0x10
 	Comment string
-	// The address of the instruction as reported by objdump
-	Address string
+	// The address of the instruction (i.e. the PC)
+	Address uint64
 }
 
 // Assembler is a generic assembler implementation interface
@@ -119,6 +118,10 @@ func InvalidAssembler() Assembler {
 	return invalidAssembler{}
 }
 
+func (instr MachineInstruction) errIsUnsupported(err error, arch string) bool {
+	return err.Error() == fmt.Sprintf(unrecognizedInstr, instr.Command) || err.Error() == fmt.Sprintf(unsupportedArch, arch)
+}
+
 // WriteOutput formats an instruction for golang compatibility using unsupported opcode syntax.
 // See https://golang.org/doc/asm#unsupported_opcodes for more details
 // tryTranslate controls whether or not to attempt to translate this instruction to Golang syntax
@@ -135,7 +138,7 @@ func (instr MachineInstruction) WriteOutput(arch string, w io.Writer, tryTransla
 		// using unsupported opcode syntax
 		if err == nil {
 			break
-		} else if err.Error() != fmt.Sprintf(unrecognizedInstr, instr.Command) && err.Error() != fmt.Sprintf(unsupportedArch, arch) {
+		} else if !instr.errIsUnsupported(err, arch) {
 			// error isn't an unsupported error, so return this and fail for this instruction
 			return err
 		}
@@ -256,12 +259,7 @@ func (instr MachineInstruction) writePlan9Supported(arch string, w io.Writer) er
 			return fmt.Errorf(unrecognizedInstr, instr.Command)
 		}
 
-		// Now translate the instruction into plan 9 syntax
-		address, err := strconv.ParseUint(instr.Address, 16, 64)
-		if err != nil {
-			return err
-		}
-		fmt.Fprintf(w, "%s \t", armasm.GoSyntax(goInstr, address, nil, nil))
+		fmt.Fprintf(w, "%s \t", armasm.GoSyntax(goInstr, instr.Address, nil, nil))
 	default:
 		return fmt.Errorf(unsupportedArch, arch)
 	}

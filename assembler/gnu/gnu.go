@@ -213,9 +213,15 @@ func (g GnuAssembler) ProcessMachineCodeToInstructions(objectFile string, syms m
 					formattedArgs[index] = strings.TrimSpace(instrArg)
 				}
 
+				// Parse the address from the instMatches
+				address, err := strconv.ParseUint(instMatches[1], 16, 64)
+				if err != nil {
+					return err
+				}
+
 				// Finally build up the instruction and add it into the map
 				symMachInstrs[sym] = append(symMachInstrs[sym], assembler.MachineInstruction{
-					Address:           instMatches[1],
+					Address:           address,
 					Bytes:             decodedBytes,
 					BytesEndianness:   binary.LittleEndian,
 					RawInstruction:    instMatches[3],

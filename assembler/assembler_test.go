@@ -23,7 +23,6 @@ func TestInstructionFormatHex(t *testing.T) {
 		{MachineInstruction{
 			Command:   "mov",
 			Arguments: []string{"r2", "lr"},
-			Address:   "0",
 		},
 			"e1a0200e",
 			"arm",
@@ -34,7 +33,6 @@ func TestInstructionFormatHex(t *testing.T) {
 		{MachineInstruction{
 			Command:   "vld1.64",
 			Arguments: []string{"{d0}", "[r0 :64]! "},
-			Address:   "0",
 		},
 			"dd0720f4",
 			"arm",
@@ -45,7 +43,6 @@ func TestInstructionFormatHex(t *testing.T) {
 		{MachineInstruction{
 			Command:   "mov",
 			Arguments: []string{"r2", "lr"},
-			Address:   "0",
 		},
 			"e1a0200e",
 			"arm",
