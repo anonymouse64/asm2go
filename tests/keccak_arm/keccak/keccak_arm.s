@@ -3,7 +3,6 @@
 
 // func KeccakF1600(state *[25]uint64, constants *[24]uint64)
 TEXT ·KeccakF1600(SB), 0, $0-8
-    MOVW R14, R2       // mov      r2        lr 
     WORD $0x108b2ded;  // vpush    {d8-d15}  
     WORD $0xdd0720f4;  // vld1.64  {d0}      [r0 :64]!  
     WORD $0xdd2720f4;  // vld1.64  {d2}      [r0 :64]!  
@@ -3485,4 +3484,3 @@ TEXT ·KeccakF1600(SB), 0, $0-8
     WORD $0xed6a40f4;  // vst1.64  {d22-d23} [r0 :128]! 
     WORD $0xdf8740f4;  // vst1.64  {d24}     [r0 :64]   
     WORD $0x108bbdec;  // vpop     {d8-d15}  
-    BX R2              // bx       r2        

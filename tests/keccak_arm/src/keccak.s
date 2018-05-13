@@ -199,7 +199,7 @@
 KeccakF1600:
     @ r0 is taken as the start of the state array
     @ r1 is taken as the start of the constants
-    mov     r2, lr
+    @ note that we don't store lr, as the plan9 assembler will insert that code for us
     vpush   {q4-q7}
     @ load state - interleaving loads helps with pipelining
     vld1.64 d0, [r0:64]!
@@ -275,5 +275,4 @@ KeccakF1600:
     vst1.64 { d22, d23 }, [r0:128]!
     vst1.64 d24, [r0:64]
     vpop    {q4-q7}
-    bx      r2
-
+    @ note that bx isn't necessary - the plan9 assembler inserts this for us
