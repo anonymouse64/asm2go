@@ -7,6 +7,12 @@ go:
 before_install:
   - go get -t -v ./...
 
+addons:
+  apt:
+    packages:
+      - gcc-arm-linux-gnueabihf
+    update: true
+
 script:
   - go test -race -coverprofile=coverage.txt -covermode=atomic ./...
 
