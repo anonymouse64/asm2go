@@ -2,7 +2,7 @@
 
 //+build arm
 
-//go:generate asm2go -file src/keccak.s -gofile keccak/keccak_arm.go -out keccak/keccak_arm.s -as-opts -march=armv7-a -as-opts -mfpu=neon-vfpv4
+//go:generate asm2go -as arm-linux-gnueabihf-as -file src/keccak.s -gofile keccak/keccak_arm.go -out keccak/keccak_arm.s -as-opts -march=armv7-a -as-opts -mfpu=neon-vfpv4
 
 package main
 
@@ -10,7 +10,7 @@ import (
 	"fmt"
 	"os"
 
-	"./keccak"
+	"github.com/anonymouse64/asm2go/tests/keccak_arm/keccak"
 )
 
 // rc stores the round constants for use in the ι step.

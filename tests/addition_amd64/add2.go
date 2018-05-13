@@ -5,7 +5,7 @@ package main
 import (
 	"fmt"
 
-	"./addition"
+	"github.com/anonymouse64/asm2go/tests/addition_amd64/addition"
 )
 
 func main() {
