@@ -453,6 +453,10 @@ TEXT ·%s(SB), %s, $%d-8
 				return err
 			}
 		}
+
+		// Finally for this symbol append a RET to the end
+		// this handles all returns in all architectures
+		fmt.Fprintln(w, "    RET")
 	}
 
 	// Flush all output
