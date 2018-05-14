@@ -191,15 +191,17 @@
 
 @ ----------------------------------------------------------------------------
 @
-@  void KeccakF1600( KeccakF1600 )
+@  void KeccakF1600( void *states, void *constants )
 @
 .align 8
 .global   KeccakF1600
 .type   KeccakF1600, %function;
 KeccakF1600:
-    @ r0 is taken as the start of the state array
-    @ r1 is taken as the start of the constants
     @ note that we don't store lr, as the plan9 assembler will insert that code for us
+    @ sp+4 is taken as the start of the state array
+    @ sp+8 is taken as the start of the constants
+    ldr     r0, [sp, #4]
+    ldr     r1, [sp, #8]
     vpush   {q4-q7}
     @ load state - interleaving loads helps with pipelining
     vld1.64 d0, [r0:64]!
