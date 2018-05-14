@@ -4,3 +4,6 @@
 *.obj
 
 *.lis
+
+cover\.html
+cover\.out
