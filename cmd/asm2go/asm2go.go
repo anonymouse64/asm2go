@@ -88,10 +88,16 @@ func makeAssembler(assemblerName string, assemblerFile string) (assembler.Assemb
 			}
 			// Use gas assembler, check what architecture
 			if strings.Contains(assemblerFile, "arm") {
-				// TODO: handle arm64 properly
 				return gnu.GnuAssembler{
 					AsExecutable:   assemblerFile,
 					Arch:           "arm",
+					Prefix:         prefix,
+					BinToolsFolder: binToolsFolder,
+				}, nil
+			} else if strings.Contains(assemblerFile, "aarch64") {
+				return gnu.GnuAssembler{
+					AsExecutable:   assemblerFile,
+					Arch:           "arm64",
 					Prefix:         prefix,
 					BinToolsFolder: binToolsFolder,
 				}, nil
