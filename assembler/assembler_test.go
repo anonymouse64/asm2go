@@ -83,8 +83,7 @@ func adjustWhitespace(s string) string {
 	return strings.TrimSpace(strings.Map(func(r rune) rune {
 		if unicode.IsSpace(r) {
 			return ' '
-		} else {
-			return r
 		}
+		return r
 	}, innerReplace))
 }
