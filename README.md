@@ -68,20 +68,20 @@ To generate the native go assembly from the native ARM assembly copied here run:
 
 This uses the go:generate comment inside `keccak_check.go`
 
-The assembly generated uses the WORD feature of Plan9 assembly to insert all native instructions like such:
+The assembly generated uses the WORD feature of Plan9 assembly to translate all unsupported native instructions like such:
 
 ```
 TEXT ·KeccakF1600(SB), 0, $0-8
-    WORD $0xe1a0200e;  // mov      r2        lr 
+    MOVW 0x4(R13), R0  // ldr      r0        [sp #4] 
+    MOVW 0x8(R13), R1  // ldr      r1        [sp #8] 
     WORD $0xed2d8b10;  // vpush    {d8-d15}  
     WORD $0xf42007dd;  // vld1.64  {d0}      [r0 :64]!  
     WORD $0xf42027dd;  // vld1.64  {d2}      [r0 :64]!  
     WORD $0xf42047dd;  // vld1.64  {d4}      [r0 :64]!  
-    WORD $0xf42067dd;  // vld1.64  {d6}      [r0 :64]!  
 ...
 ```
 
-The only required parts are the working ARM assembly file (`keccak.s`) and the go declaration file which just declares the assembly-implemented function in go. The go file doesn't need anything extra, just the function declaration:
+The only required parts are the ARM assembly file (`keccak.s`) and the go declaration file which declares the assembly-implemented function in go. The go file doesn't need anything extra, just the function declaration:
 
 ```
 package keccak
