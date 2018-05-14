@@ -76,8 +76,10 @@ func TestInstructionFormatHex(t *testing.T) {
 // this simplifies comparing strings that will have formatting in them, etc.
 // code from : https://stackoverflow.com/questions/37290693/how-to-remove-redundant-spaces-whitespace-from-a-string-in-golang
 func adjustWhitespace(s string) string {
-	re_inside_whtsp := regexp.MustCompile(`[\s\p{Zs}]{2,}`)
-	innerReplace := re_inside_whtsp.ReplaceAllString(s, " ")
+	// This regex replaces all whitespace inside a string (i.e. not at the start and the end) with a single one
+	innerReplace := regexp.MustCompile(`[\s\p{Zs}]{2,}`).ReplaceAllString(s, " ")
+	// This deletes all starting/trailing whitespace, and also replaces all whitespace characters with a single space
+	// this is because the above regex doesn't properly handle cases with just a single tab character, etc.
 	return strings.TrimSpace(strings.Map(func(r rune) rune {
 		if unicode.IsSpace(r) {
 			return ' '

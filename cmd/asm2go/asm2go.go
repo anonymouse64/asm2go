@@ -73,7 +73,7 @@ func makeAssembler(assemblerName string, assemblerFile string) (assembler.Assemb
 		switch {
 		case strings.Contains(assemblerFile, "yasm"):
 			// TODO: implement yasm support
-			return assembler.InvalidAssembler(), fmt.Errorf("%s is not supported yet\n", assemblerFile)
+			return assembler.InvalidAssembler(), fmt.Errorf("%s is not supported yet", assemblerFile)
 		case assemblerExec == "as":
 			// native "as" treat as gas
 			fallthrough
@@ -106,7 +106,7 @@ func makeAssembler(assemblerName string, assemblerFile string) (assembler.Assemb
 			// TODO: implement armcc
 			fallthrough
 		default:
-			return assembler.InvalidAssembler(), fmt.Errorf("%s is not supported yet\n", assemblerFile)
+			return assembler.InvalidAssembler(), fmt.Errorf("%s is not supported yet", assemblerFile)
 		}
 	case "arm-linux-gnueabihf-as":
 		arch = "arm"
@@ -135,7 +135,7 @@ func makeAssembler(assemblerName string, assemblerFile string) (assembler.Assemb
 			BinToolsFolder: binToolsFolder,
 		}, nil
 	default:
-		return assembler.InvalidAssembler(), fmt.Errorf("%s is not supported yet\n", assemblerName)
+		return assembler.InvalidAssembler(), fmt.Errorf("%s is not supported yet", assemblerName)
 	}
 }
 

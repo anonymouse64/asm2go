@@ -85,7 +85,6 @@ func TestMakeAssembler(t *testing.T) {
 			t.Errorf("Unable to make assembler of (name=%s, file=%s), got: (as=%#v, err=%v) want: (as=%#v, err=%v).", table.name, table.file, as, err, table.as, table.err)
 		}
 	}
-
 }
 
 func compareAsGnuAssemblers(as assembler.Assembler, g assembler.Assembler) bool {
