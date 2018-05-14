@@ -12,6 +12,14 @@ This project aims to automatically generate working Golang assembly from native 
 
 `asm2go` requires 2 files, a native assembly file that assembles properly using `as` (the GNU assembler), and a Golang declaration file that contains signatures for the functions implemented in assembly. These names must match exactly, if a symbol in the assembly doesn't have a corresponding go function declaration the generation fails (this restriction is somewhat arbitrary right now and may be lifted in the future). 
 
+As to writing the actual assembly code to be translated, there are a few caveats. 
+
+0. Argument calling convention in Go places arguments on the stack, so you should write the assembly code to reference the stack for accessing arguments provided to functions. This may or may not match what is normally done, for example registers are sometimes used instead for passing arguments, but referencing the stack seems to be the best way to do this.
+1. Data symbols are not yet supported. For example, defining an array of data with a symbol referring to the start of the array isn't supported. This is due to the fact that this tool translates the compiled object code into Golang assembly, at which point most data symbol references in the code have been translated into addresses, which means that simply including the array won't work as it will likely be repositioned in the final binary by go. This translation could be made to work, but it would be quite difficult.
+2. The produced Golang assembly currently includes a RET at the end, which means that you shouldn't also include returning instructions (such as `bx lr` for ARM) as the Golang assembler will already insert this information.
+3. Supported instructions are translated from native assembly into Golang's supported syntax. For example `mov r2 lr` in native ARM is translated to `MOVW R14, R2` in native plan9 assembly. 
+4. No assembly function flags are currently supported. I eventually hope to solve this by annotating the function's declaration in the go source file. For example to insert the `NOPTR` flag, I think eventually a comment like `// asm2go:noptr` would be included above the function's declaration. Specifying the frame sizes should also probably be supported this way. It would be nice for `asm2go` to dynamically determine the size of the arguments, but this isn't currently implemented.
+
 Furthermore, the assembler must either be specified with the `-as` option, which can be a absolute path or a name on `$PATH`. In the same folder as the assembler must be the executables `strip` and `objdump` must also be available (note that specified a compiled with a prefix such as `arm-linux-gnueabihf-as` works; the prefix is resolved to find `arm-linux-gnueabihf-objdump`, etc - this allows cross compiling to work as expected). `strip` is used to remove debugging information from the compiled object file, and `objdump` is used to parse the actual hex instructions that are associated with instructions.
 
 Assembler options may be specified with `as-opts`, as many times as needed. For example to use the options `-march=armv7-a` and the option `-mfpu=neon-vfpv4`, you would invoke `asm2go` as follows:
@@ -84,16 +92,7 @@ func KeccakF1600(state *[25]uint64, constants *[24]uint64)
 
 ```
 
-
-## Limitations
-
-1. Constant arrays are not supported, i.e. a label with data after it inside assembly does not work because when assembled, the references to addresses are usually absolute and the golang linker will move the constants around in memory. This may or may not be supported in when assembling/compiling from C/C++ code
-	1. Constants could actually be supported per architecture by analyzing the instructions themselves, looking for instructions that use memory addresses in their arguments, checking what address is referred to by that instruction, then going and checking that address in the compiled symbols to see if that address points to the start of a symbol we have. If that's the case then it could be dynamically changed to a golang assembly directive doing the same instruction (if that's possible) with a global data reference, and then also resolve the global data symbol to be a DATA directive in the go code instead of a TEXT symbol like currently handled
-2. Currently the frame size and argument sizes are both set to 0, I am hoping to fix this in the future to dynamically resolve this information from the signature. It is up to you of course to ensure your assembler function actually works with the specified frame/argument sizes. 
-3. Only GAS is supported, I hope to also at least support `armcc` and `yasm` at some point. Windows assemblers are probably supported, though I've never worked with an equivalent to objdump on windows, so that step may prove difficult
-4. No assembler function flags are specified currently, I think the best way to handle this is to check for comments in the doc comment, i.e. `// asm2go:nosplit` would add the flag `NOSPLIT` to the assembler declaration.
-
 ## License
 
-This project is licensed under GPLv3. See LICENSE file for full license.
+This project is licensed under the GPLv3. See LICENSE file for full license.
 Copyright 2018 Canonical Ltd.
