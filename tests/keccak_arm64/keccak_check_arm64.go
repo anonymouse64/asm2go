@@ -1,6 +1,6 @@
 // example keccak assembly function usage on arm
 
-//+build arm
+//+build arm64
 
 //go:generate asm2go -as aarch64-linux-gnu-as -file src/keccak_arm64_src.s -gofile keccak/keccak_arm64.go -out keccak/keccak_arm64.s
 
