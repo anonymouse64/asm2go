@@ -180,7 +180,21 @@ func (instr MachineInstruction) writePlan9Unsupported(arch string, w io.Writer) 
 	// Calculate the prefixes to use based on the number of bits
 	var prefixes []string
 	var lengths []int
-	if maxBits == 64 {
+	if maxBits == 64 && arch == "arm64" {
+		// arm64 architecture doesn't support LONG's as 32-bit's instead
+		// 32-bit instructions are WORD's
+		prefixes = []string{
+			"QUAD $0x%02x%02x%02x%02x%02x%02x%02x%02x; \t",
+			"WORD $0x%02x%02x%02x%02x; \t",
+			"BYTE $0x%02x; \t",
+		}
+		lengths = []int{
+			8,
+			4,
+			1,
+		}
+	} else if maxBits == 64 {
+		// Other 64 bit architecture's have QUAD = 8 bytes, LONG = 4 bytes, WORD = 2 bytes, BYTE = 1 byte
 		prefixes = []string{
 			"QUAD $0x%02x%02x%02x%02x%02x%02x%02x%02x; \t",
 			"LONG $0x%02x%02x%02x%02x; \t",
@@ -208,6 +222,9 @@ func (instr MachineInstruction) writePlan9Unsupported(arch string, w io.Writer) 
 			4,
 			1,
 		}
+	} else {
+		// unsupported architecture, unsure what to do, so fail
+		return fmt.Errorf("unsupported architecture: %s", arch)
 	}
 
 	// Iterate over the various lengths to insert, inserting as many of the bytes as we can
@@ -229,7 +246,9 @@ func (instr MachineInstruction) writePlan9Unsupported(arch string, w io.Writer) 
 			// For some reason the plan9 assembler puts down data for 32 bit architectures in the order they appear
 			// but for 64-bit architecture's swaps the endianness, so for 64-bit we need to reverse the endianness of the bytes
 			// them into the array
-			if maxBits == 64 && instr.BytesEndianness == binary.LittleEndian {
+			// TODO: apparently amd64 is the only architecture that needs it's bytes reversed? Should investigate...
+			// arm64 doesn't need it's bytes reversed here
+			if arch == "amd64" {
 				for i, j := 0, len(args)-1; i < j; i, j = i+1, j-1 {
 					args[i], args[j] = args[j], args[i]
 				}
