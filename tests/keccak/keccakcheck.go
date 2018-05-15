@@ -1,7 +1,9 @@
 // example keccak assembly function usage on arm
 
-//+build arm64
+// generate plan9 asm sources for arm
+//go:generate asm2go -as arm-linux-gnueabihf-as -file src/keccak_arm_src.s -gofile keccak/keccak_arm.go -out keccak/keccak_arm.s -as-opts -march=armv7-a -as-opts -mfpu=neon-vfpv4
 
+// generate plan9 asm sources for arm64
 //go:generate asm2go -as aarch64-linux-gnu-as -file src/keccak_arm64_src.s -gofile keccak/keccak_arm64.go -out keccak/keccak_arm64.s
 
 package main
@@ -10,7 +12,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/anonymouse64/asm2go/tests/keccak_arm64/keccak"
+	"github.com/anonymouse64/asm2go/tests/keccak/keccak"
 )
 
 // rc stores the round constants for use in the ι step.
