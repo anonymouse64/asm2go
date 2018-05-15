@@ -44,22 +44,6 @@
 // ext v0.16b, v19.16b, v20.16b, #8
 // v0  = A[4] || A[1]
 
-.macro    LoadState
-    ld4     { v19.2d, v20.2d, v21.2d, v22.2d }, [x0], #64
-    ld4     { v23.2d, v24.2d, v25.2d, v26.2d }, [x0], #64
-    ld4     { v27.2d, v28.2d, v29.2d, v30.2d }, [x0], #64
-    ld1     { v31.d }[0], [x0], #8
-    sub     x0, x0, #200
-    movi    v16.2d, #0
-    .endm
-
-.macro    StoreState
-    st4     { v19.2d, v20.2d, v21.2d, v22.2d }, [x0], #64
-    st4     { v23.2d, v24.2d, v25.2d, v26.2d }, [x0], #64
-    st4     { v27.2d, v28.2d, v29.2d, v30.2d }, [x0], #64
-    st1     { v31.d }[0], [x0], #8
-    .endm
-
 .macro    RhoPi dst, src, sav, rot
     ror     \src, \src, #64-\rot
     mov     \sav, \dst
@@ -227,27 +211,10 @@
     eor     v19.16b, v19.16b, v16.16b
     .endm
 
-//----------------------------------------------------------------------------
-//
-// void KeccakP1600_Initialize(void *state)
-//
-//.align 8
-//.global   KeccakP1600_Initialize
-//KeccakP1600_Initialize:
-//    movi    v0.2d, #0
-//    movi    v1.2d, #0
-//    movi    v2.2d, #0
-//    movi    v3.2d, #0
-//    st4     { v0.2d, v1.2d, v2.2d, v3.2d }, [x0], #64  // Clear 8lanes=64 bytes at a time
-//    st4     { v0.2d, v1.2d, v2.2d, v3.2d }, [x0], #64
-//    st4     { v0.2d, v1.2d, v2.2d, v3.2d }, [x0], #64
-//    st1     { v0.d }[0], [x0], #8
-//    ret
-
 
 // ----------------------------------------------------------------------------
 //
-//  void KeccakF1600( void *state )
+//  void KeccakF1600( void *states, void *constants )
 //
 .align 8
 .global   KeccakF1600
@@ -255,7 +222,12 @@
 KeccakF1600:
     ldr     x0, [sp, #8]
     ldr     x1, [sp, #16]
-    LoadState
+    ld4     { v19.2d, v20.2d, v21.2d, v22.2d }, [x0], #64
+    ld4     { v23.2d, v24.2d, v25.2d, v26.2d }, [x0], #64
+    ld4     { v27.2d, v28.2d, v29.2d, v30.2d }, [x0], #64
+    ld1     { v31.d }[0], [x0], #8
+    sub     x0, x0, #200
+    movi    v16.2d, #0
     KeccakRound
     KeccakRound
     KeccakRound
@@ -280,4 +252,9 @@ KeccakF1600:
     KeccakRound
     KeccakRound
     KeccakRound
-    StoreState
+    @ store the state
+    st4     { v19.2d, v20.2d, v21.2d, v22.2d }, [x0], #64
+    st4     { v23.2d, v24.2d, v25.2d, v26.2d }, [x0], #64
+    st4     { v27.2d, v28.2d, v29.2d, v30.2d }, [x0], #64
+    st1     { v31.d }[0], [x0], #8
+
