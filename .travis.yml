@@ -5,7 +5,8 @@ go:
   - tip
 
 before_install:
-  - go get -t -v ./...
+  - go get -t -v ./cmd/...
+  - go get -t -v ./assembler/...
 
 addons:
   apt:
