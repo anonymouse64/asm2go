@@ -2,7 +2,7 @@
 
 //+build arm
 
-//go:generate asm2go -as arm-linux-gnueabihf-as -file src/keccak.s -gofile keccak/keccak_arm.go -out keccak/keccak_arm.s -as-opts -march=armv7-a -as-opts -mfpu=neon-vfpv4
+//go:generate asm2go -as arm-linux-gnueabihf-as -file src/keccak_arm_src.s -gofile keccak/keccak_arm.go -out keccak/keccak_arm.s -as-opts -march=armv7-a -as-opts -mfpu=neon-vfpv4
 
 package main
 
