@@ -8,3 +8,5 @@
 cover\.html
 cover\.out
 \.vscode/
+
+\.spread-reuse*\.yaml
