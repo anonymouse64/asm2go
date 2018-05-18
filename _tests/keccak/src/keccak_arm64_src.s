@@ -220,8 +220,11 @@
 .global   KeccakF1600
 .type   KeccakF1600, %function;
 KeccakF1600:
+    // state array is first argument on stack
+    // constant array is the second argument on the stack
     ldr     x0, [sp, #8]
     ldr     x1, [sp, #16]
+    // load the state
     ld4     { v19.2d, v20.2d, v21.2d, v22.2d }, [x0], #64
     ld4     { v23.2d, v24.2d, v25.2d, v26.2d }, [x0], #64
     ld4     { v27.2d, v28.2d, v29.2d, v30.2d }, [x0], #64
@@ -252,7 +255,7 @@ KeccakF1600:
     KeccakRound
     KeccakRound
     KeccakRound
-    @ store the state
+    // store the state
     st4     { v19.2d, v20.2d, v21.2d, v22.2d }, [x0], #64
     st4     { v23.2d, v24.2d, v25.2d, v26.2d }, [x0], #64
     st4     { v27.2d, v28.2d, v29.2d, v30.2d }, [x0], #64
