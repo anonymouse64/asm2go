@@ -6,7 +6,7 @@ go:
 
 go_import_path: github.com/anonymouse64/asm2go
 
-before_install:
+install:
   - go get -t -v ./cmd/...
   - go get -t -v ./assembler/...
 
