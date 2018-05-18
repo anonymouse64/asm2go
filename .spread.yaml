@@ -1,0 +1,26 @@
+project: asm2go
+
+backends:
+    lxd:
+        systems: [ubuntu-18.04]
+
+suites:
+    testdata/:
+        summary: Keccak function on ARM/ARM64 example
+        environment:
+            GOARCH/arm: arm
+            GOARM/arm: 7
+            QEMU_EXEC/arm: qemu-arm-static
+        kill-timeout: 30m
+        prepare: |
+            snap install go --classic
+            export GOPATH=$(go env GOPATH)
+            export PATH="$GOPATH/bin:$PATH"
+            apt update
+            apt install gcc-arm-linux-gnueabihf gcc-aarch64-linux-gnu qemu-user-static libvirt-bin -y -qq
+            GOARCH=amd64 go get -t -v ../../...
+            GOARCH=amd64 go install ../../...
+        restore: | 
+            snap remove go
+
+path: /root/go/src/github.com/anonymouse64/asm2go

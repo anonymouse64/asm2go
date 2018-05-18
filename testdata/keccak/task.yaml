@@ -1,0 +1,13 @@
+summary: Test Keccak on ARM
+environment:
+    GOARM/arm: 7
+    GOARCH/arm: arm
+    QEMU_EXEC/arm: qemu-arm-static
+    GOARCH/arm64: arm64
+    QEMU_EXEC/arm64: qemu-aarch64-static
+execute: |
+    export GOPATH=$(go env GOPATH)
+    export PATH="$GOPATH/bin:$PATH"
+    go generate
+    go build -o keccakcheck keccakcheck.go 
+    $QEMU_EXEC keccakcheck

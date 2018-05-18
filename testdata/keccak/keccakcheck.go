@@ -12,7 +12,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/anonymouse64/asm2go/tests/keccak/keccak"
+	"github.com/anonymouse64/asm2go/testdata/keccak/keccak"
 )
 
 // rc stores the round constants for use in the ι step.
