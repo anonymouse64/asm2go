@@ -4,9 +4,14 @@ go:
   - 1.10.x
   - tip
 
+go_import_path: github.com/anonymouse64/asm2go
+
 before_install:
   - go get -t -v ./cmd/...
   - go get -t -v ./assembler/...
+
+script:
+  - go test -v ./cmd/... ./assembler/...
 
 addons:
   apt:
