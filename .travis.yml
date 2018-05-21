@@ -12,7 +12,7 @@ addons:
       - gcc-arm-linux-gnueabihf
     update: true
 
-before_script:
+install:
   - go get -u github.com/kardianos/govendor
   - govendor sync
   - govendor fetch +out
