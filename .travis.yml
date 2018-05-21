@@ -12,6 +12,11 @@ addons:
       - gcc-arm-linux-gnueabihf
     update: true
 
+before_script:
+  - go get -u github.com/kardianos/govendor
+  - govendor sync
+  - govendor fetch +out
+
 script:
   - go test -race -coverprofile=coverage.txt -covermode=atomic ./...
 

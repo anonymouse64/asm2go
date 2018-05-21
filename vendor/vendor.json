@@ -1,0 +1,22 @@
+{
+	"comment": "asm deps as vendored into go release 1.10.2, see https://go.googlesource.com/go/+/go1.10.2/src/cmd/vendor/vendor.json",
+	"ignore": "",
+	"package": [
+		{
+			"checksumSHA1": "2EYTI2CI60aobceYiuO/7IUpeI0=",
+			"path": "golang.org/x/arch/arm/armasm",
+			"revision": "98fd8d9907002617e6000a77c0740a72947ca1c2"
+		},
+		{
+			"checksumSHA1": "WXTyiM5cOQdWzOycvvJk8iwCAfY=",
+			"path": "golang.org/x/arch/arm64/arm64asm",
+			"revision": "98fd8d9907002617e6000a77c0740a72947ca1c2"
+		},
+		{
+			"checksumSHA1": "eVw6jYpJoF1k/rudKPHpKslAtQQ=",
+			"path": "golang.org/x/arch/x86/x86asm",
+			"revision": "98fd8d9907002617e6000a77c0740a72947ca1c2"
+		}
+	],
+	"rootPath": "github.com/anonymouse64/asm2go"
+}

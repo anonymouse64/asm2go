@@ -10,3 +10,5 @@ cover\.out
 \.vscode/
 
 \.spread-reuse*\.yaml
+
+vendor/*/

@@ -13,13 +13,16 @@ suites:
             QEMU_EXEC/arm: qemu-arm-static
         kill-timeout: 30m
         prepare: |
-            snap install go --classic
+            apt update
+            apt install build-essential gcc-arm-linux-gnueabihf gcc-aarch64-linux-gnu qemu-user-static libvirt-bin wget -y -qq
+            snap install go --classic --channel=1.10/stable
+            export GOARCH=amd64
             export GOPATH=$(go env GOPATH)
             export PATH="$GOPATH/bin:$PATH"
-            apt update
-            apt install gcc-arm-linux-gnueabihf gcc-aarch64-linux-gnu qemu-user-static libvirt-bin -y -qq
-            GOARCH=amd64 go get -t -v ../../...
-            GOARCH=amd64 go install ../../...
+            go get -u github.com/kardianos/govendor
+            govendor sync
+            govendor fetch +out
+            go install ../../... 
         restore: | 
             snap remove go
 
