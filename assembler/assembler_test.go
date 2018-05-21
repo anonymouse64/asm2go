@@ -20,6 +20,8 @@ type instructionTest struct {
 
 func TestInstructionFormatHex(t *testing.T) {
 	tables := []instructionTest{
+		// ARM tests
+		// supported opcodes
 		{MachineInstruction{
 			Command:   "mov",
 			Arguments: []string{"r2", "lr"},
@@ -31,6 +33,17 @@ func TestInstructionFormatHex(t *testing.T) {
 			"WORD $0xe1a0200e; // mov r2 lr",
 		},
 		{MachineInstruction{
+			Command:   "mov",
+			Arguments: []string{"r2", "lr"},
+		},
+			"e1a0200e",
+			"arm",
+			true,
+			nil,
+			"MOVW R14, R2 // mov r2 lr",
+		},
+		// unsupported opcodes
+		{MachineInstruction{
 			Command:   "vld1.64",
 			Arguments: []string{"{d0}", "[r0 :64]! "},
 		},
@@ -41,14 +54,36 @@ func TestInstructionFormatHex(t *testing.T) {
 			"WORD $0xf42007dd; // vld1.64 {d0} [r0 :64]!",
 		},
 		{MachineInstruction{
-			Command:   "mov",
-			Arguments: []string{"r2", "lr"},
+			Command:   "vld1.64",
+			Arguments: []string{"{d0}", "[r0 :64]! "},
 		},
-			"e1a0200e",
+			"f42007dd",
 			"arm",
+			false,
+			nil,
+			"WORD $0xf42007dd; // vld1.64 {d0} [r0 :64]!",
+		},
+
+		// ARM64 tests
+		{MachineInstruction{
+			Command:   "ldr",
+			Arguments: []string{"x0", "[sp", "#8]"},
+		},
+			"f94007e0",
+			"arm64",
+			false,
+			nil,
+			"WORD $0xf94007e0; // ldr x0 [sp #8]",
+		},
+		{MachineInstruction{
+			Command:   "ldr",
+			Arguments: []string{"x0", "[sp", "#8]"},
+		},
+			"f94007e0",
+			"arm64",
 			true,
 			nil,
-			"MOVW R14, R2 // mov r2 lr",
+			"MOVD 8(RSP), R0 // ldr x0 [sp #8]",
 		},
 	}
 

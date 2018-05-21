@@ -452,9 +452,17 @@ TEXT ·%s(SB), %s, $%d-8
 			totalBytes,
 		)
 
+		// NOTE: for arm64, currently the disassembler doesn't sync with the assembler
+		// and so we shouldn't try to translate supported op codes because the dissassembler
+		// produces syntax that the assembler doesn't understand
+		trySupportedTranslation := true
+		if arch == "arm64" {
+			trySupportedTranslation = false
+		}
+
 		// Now output all of the instructions for this symbol
 		for _, instr := range instrs {
-			err := instr.WriteOutput(arch, w, true)
+			err := instr.WriteOutput(arch, w, trySupportedTranslation)
 			if err != nil {
 				return err
 			}

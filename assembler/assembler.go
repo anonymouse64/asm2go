@@ -6,6 +6,7 @@ import (
 	"io"
 
 	"golang.org/x/arch/arm/armasm"
+	"golang.org/x/arch/arm64/arm64asm"
 )
 
 const (
@@ -280,6 +281,20 @@ func (instr MachineInstruction) writePlan9Supported(arch string, w io.Writer) er
 		}
 
 		fmt.Fprintf(w, "%s \t", armasm.GoSyntax(goInstr, instr.Address, nil, nil))
+	case "arm64":
+		// the arm decoder expects the bytes in little endian
+		instrBytes := make([]byte, len(instr.Bytes))
+		copy(instrBytes, instr.Bytes)
+		reverseEndianness(instrBytes)
+		// to translate this machine instruction into plan9 assembly, first see if it can be decoded
+		goInstr, err := arm64asm.Decode(instrBytes)
+		if err != nil {
+			// Then we couldn't decode this instruction and we should
+			// use the WORD method
+			return fmt.Errorf(unrecognizedInstr, instr.Command)
+		}
+
+		fmt.Fprintf(w, "%s \t", arm64asm.GoSyntax(goInstr, instr.Address, nil, nil))
 	default:
 		return fmt.Errorf(unsupportedArch, arch)
 	}
