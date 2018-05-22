@@ -15,18 +15,8 @@ apps:
 
 parts:
   go:
-    plugin: nil
-    build-packages: [golang-go, g++]
-    source: https://go.googlesource.com/go
-    source-type: git
-    override-build: |
-      cd src && env GOROOT_BOOTSTRAP=$(go env GOROOT | tr -d '\n') ./make.bash
-      cd ..
-      cp -R bin $SNAPCRAFT_PART_INSTALL
     source-tag: go1.10.2
     source-depth: 1
-    prime:
-      - '-*'
   asm2go:
     go-importpath: github.com/anonymouse64/asm2go
     after: [go]
