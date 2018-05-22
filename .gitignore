@@ -12,3 +12,6 @@ cover\.out
 \.spread-reuse*\.yaml
 
 vendor/*/
+*.snap
+
+*.bz2

@@ -1,0 +1,45 @@
+name: asm2go
+version: '0.1'
+summary: Translate native assembly functions into Plan9 syntax
+description: |
+  asm2go translates native assembly functions into a Plan9 syntax format usable with Go, without needing Cgo style linking requirements.
+  Included in the snap are cross-compilers for ARM and ARM64 so no cross-compilers have to be installed into the host system.
+
+grade: stable
+confinement: strict
+
+apps:
+  asm2go:
+    command: bin/asm2go
+
+parts:
+  go:
+    plugin: nil
+    build-packages: [golang-go, g++]
+    source: https://go.googlesource.com/go
+    source-type: git
+    override-build: |
+      cd src && env GOROOT_BOOTSTRAP=$(go env GOROOT | tr -d '\n') ./make.bash
+      cd ..
+      cp -R bin $SNAPCRAFT_PART_INSTALL
+    source-tag: go1.10.2
+    source-depth: 1
+    prime:
+      - '-*'
+  asm2go:
+    go-importpath: github.com/anonymouse64/asm2go
+    after: [go]
+    plugin: go
+    source: .
+    stage-packages:
+      - gcc-arm-linux-gnueabihf
+      - gcc-aarch64-linux-gnu
+      - build-essential
+    override-build: |
+      export GOPATH=$(dirname $PWD)/go
+      go get -u github.com/kardianos/govendor
+      export PATH="$GOPATH/bin:$PATH"
+      cd $GOPATH/src/github.com/anonymouse64/asm2go
+      govendor sync
+      mkdir -p $SNAPCRAFT_PART_INSTALL/bin
+      go build -o $SNAPCRAFT_PART_INSTALL/bin/asm2go ./cmd/asm2go/asm2go.go
