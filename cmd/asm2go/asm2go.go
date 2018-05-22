@@ -510,10 +510,10 @@ func main() {
 		// TODO
 	} else if assemblerString == "armcc" {
 		// TODO
-	} else if _, err := os.Stat(*assemblerOpt); err == nil {
+	} else if _, statErr := os.Stat(*assemblerOpt); statErr == nil {
 		// assembler is a valid file path
 		as, err = makeAssembler("", *assemblerOpt)
-	} else if _, err := os.Stat(assemblerOnPath); err == nil {
+	} else if _, statErr := os.Stat(assemblerOnPath); statErr == nil {
 		// assembler is a file that exists on the $PATH
 		as, err = makeAssembler("", assemblerOnPath)
 	} else {
