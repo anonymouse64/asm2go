@@ -5,6 +5,7 @@
 [![Build Status](https://travis-ci.com/anonymouse64/asm2go.svg?branch=master)](https://travis-ci.com/anonymouse64/asm2go)
 [![codecov](https://codecov.io/gh/anonymouse64/asm2go/branch/master/graph/badge.svg)](https://codecov.io/gh/anonymouse64/asm2go)
 [![Snap Status](https://build.snapcraft.io/badge/anonymouse64/asm2go.svg)](https://build.snapcraft.io/user/anonymouse64/asm2go)
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fanonymouse64%2Fasm2go.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fanonymouse64%2Fasm2go?ref=badge_shield)
 
 
 This project aims to automatically generate working Golang assembly from native assembly and a golang declaration file, mainly used for implementing performance-intensive complex functions in assembly. 
